@@ -197,4 +197,29 @@ def first_and_second_prizes(req:Any):
         },
     }
     return JsonResponse(json_5)
+def sales_trend(request):
+    BASE = settings.BASE_DIR
+    csv_path = os.path.join(BASE, "DjangoProject", "web", "TwoColorBall.csv")
+    df = pd.read_csv(csv_path)
+    df.columns = df.columns.str.strip()
+
+    df = df.sort_values(by="期号", ascending=True)##升序
+
+    recent_df = df.tail(10)##截取最后十行
+
+    x_data = recent_df["期号"].astype(str).tolist()##提取期号列表
+
+    sales_data = []
+    for val in recent_df["销售额"]:##遍历销售额的值
+        sales_data.append(int(float(val)))##int化然后追加
+    data_list = []
+    for x, y in zip(x_data, sales_data):
+        data_list.append({"issue": x, "sales": y})##合并成字典
+
+    json_6=({
+        "msg": "ok",
+        "title": "最近10期销售额走势",
+        "data": data_list
+    })
+    return JsonResponse(json_6)##打包并发送给前端
 
